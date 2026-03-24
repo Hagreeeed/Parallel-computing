@@ -1,0 +1,259 @@
+=============================================================
+     MARKETPLACE API - ПОВНИЙ ДОВІДНИК CURL ЗАПИТІВ
+=============================================================
+
+ЗЦей файл містить готові команди для тестування API напряму з терміналу.
+Змініть EMAIL, PASSWORD, TOKEN та ID на необхідні.
+
+> УВАГА: Користувач-адміністратор створюється автоматично при запуску сервера!
+> Емейл: admin@marketplace.com
+> Пароль: password значення.
+
+=============================================================
+ 1. AUTH (АВТОРИЗАЦІЯ)
+=============================================================
+# Реєстрація (CUSTOMER):
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@test.com", "password":"password", "firstName":"Test", "lastName":"User"}'
+
+# Логін (отримання token):
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@test.com", "password":"password"}'
+
+# Оновлення токена (Refresh):
+curl -X POST http://localhost:8080/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"YOUR_REFRESH_TOKEN"}'
+
+# Логаут:
+curl -X POST http://localhost:8080/api/auth/logout \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 2. USERS (КОРИСТУВАЧІ)
+=============================================================
+# Всі користувачі (GET):
+curl -X GET http://localhost:8080/api/users -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Користувач за ID (GET):
+curl -X GET http://localhost:8080/api/users/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оновити користувача (PUT):
+curl -X PUT http://localhost:8080/api/users/{id} \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"new@test.com", "password":"new", "role":"CUSTOMER"}'
+
+# Видалити користувача (DELETE):
+curl -X DELETE http://localhost:8080/api/users/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Стати продавцем:
+curl -X POST http://localhost:8080/api/users/{id}/become-seller \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"shopName":"My Shop", "description":"Shop Desc"}'
+
+=============================================================
+ 3. ADMIN (АДМІНІСТРАТОР)
+=============================================================
+# Верифікувати продавця (PUT):
+curl -X PUT http://localhost:8080/api/admin/sellers/{id}/verify \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 4. CUSTOMERS (ПОКУПЦІ)
+=============================================================
+# Всі покупці (GET):
+curl -X GET http://localhost:8080/api/customers -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Покупець за ID (GET):
+curl -X GET http://localhost:8080/api/customers/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оновити покупця (PUT):
+curl -X PUT http://localhost:8080/api/customers/{id} \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"firstName":"New", "lastName":"Name", "phone":"+123", "shippingAddress":"City"}'
+
+# Видалити покупця (DELETE):
+curl -X DELETE http://localhost:8080/api/customers/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 5. SELLERS (ПРОДАВЦІ)
+=============================================================
+# Всі продавці (GET):
+curl -X GET http://localhost:8080/api/sellers -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Продавець за ID (GET):
+curl -X GET http://localhost:8080/api/sellers/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Всі товари продавця (GET):
+curl -X GET http://localhost:8080/api/sellers/{id}/products -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оновити продавця (PUT):
+curl -X PUT http://localhost:8080/api/sellers/{id} \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"shopName":"New Shop", "description":"Desc", "userId": 1}'
+
+# Видалити продавця (DELETE):
+curl -X DELETE http://localhost:8080/api/sellers/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 6. CATEGORIES (КАТЕГОРІЇ)
+=============================================================
+# Всі категорії (GET):
+curl -X GET http://localhost:8080/api/categories
+
+# Категорія за ID (GET):
+curl -X GET http://localhost:8080/api/categories/{id}
+
+# Підкатегорії (GET):
+curl -X GET http://localhost:8080/api/categories/{id}/subcategories
+
+# Створити (POST):
+curl -X POST http://localhost:8080/api/categories \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Electronics", "description":"Gadgets"}'
+
+# Оновити (PUT):
+curl -X PUT http://localhost:8080/api/categories/{id} \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Laptops", "description":"Portable PCs"}'
+
+# Видалити (DELETE):
+curl -X DELETE http://localhost:8080/api/categories/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 7. PRODUCTS (ТОВАРИ)
+=============================================================
+# Всі товари (GET):
+curl -X GET "http://localhost:8080/api/products?page=0&size=10"
+
+# Товар за ID (GET):
+curl -X GET http://localhost:8080/api/products/{id}
+
+# Створити (POST):
+curl -X POST http://localhost:8080/api/products \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"categoryId":1, "sellerId":1, "name":"Laptop", "description":"PC", "price":1500.0, "stockQuantity":10}'
+
+# Оновити (PUT):
+curl -X PUT http://localhost:8080/api/products/{id} \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Laptop Pro", "price":1700.0, "stockQuantity":5, "sellerId":1, "categoryId":1}'
+
+# Деактивувати (POST):
+curl -X POST http://localhost:8080/api/products/{id}/deactivate -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Видалити (DELETE):
+curl -X DELETE http://localhost:8080/api/products/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 8. ORDERS (ЗАМОВЛЕННЯ)
+=============================================================
+# Всі замовлення (GET):
+curl -X GET http://localhost:8080/api/orders -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Мої замовлення (GET):
+curl -X GET http://localhost:8080/api/orders/my -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Замовлення за ID (GET):
+curl -X GET http://localhost:8080/api/orders/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Створити замовлення (POST):
+curl -X POST http://localhost:8080/api/orders \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"customerId":1, "items":[{"productId":1, "quantity":1, "priceAtTime":1500.0}]}'
+
+# Змінити статуси (POST via custom paths):
+curl -X POST http://localhost:8080/api/orders/{id}/confirm -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+curl -X POST http://localhost:8080/api/orders/{id}/ship -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+curl -X POST http://localhost:8080/api/orders/{id}/deliver -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+curl -X POST http://localhost:8080/api/orders/{id}/cancel -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оновити цілком (PUT):
+curl -X PUT http://localhost:8080/api/orders/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" -d '{"totalAmount": 1500.0, "status": "PENDING"}'
+
+# Видалити (DELETE):
+curl -X DELETE http://localhost:8080/api/orders/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 9. PAYMENTS (ОПЛАТИ)
+=============================================================
+# Всі оплати (GET):
+curl -X GET http://localhost:8080/api/payments -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оплата за ID (GET):
+curl -X GET http://localhost:8080/api/payments/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оплата за Order ID (GET):
+curl -X GET http://localhost:8080/api/payments/order/{orderId} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Створити оплату (POST):
+curl -X POST http://localhost:8080/api/payments \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"orderId":1, "paymentMethod":"CREDIT_CARD", "amount":1500.0}'
+
+# Статусні дії:
+curl -X POST http://localhost:8080/api/payments/{id}/complete -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+curl -X POST http://localhost:8080/api/payments/{id}/fail -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+curl -X POST http://localhost:8080/api/payments/{id}/refund -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оновити (PUT):
+curl -X PUT http://localhost:8080/api/payments/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -H "Content-Type: application/json" -d '{"orderId":1, "amount": 1500.0, "paymentMethod":"CARD"}'
+
+# Видалити (DELETE):
+curl -X DELETE http://localhost:8080/api/payments/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 10. REVIEWS (ВІДГУКИ)
+=============================================================
+# Всі відгуки (GET):
+curl -X GET http://localhost:8080/api/reviews -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Відгуки на товар або продавця:
+curl -X GET http://localhost:8080/api/reviews/product/{productId}
+curl -X GET http://localhost:8080/api/reviews/seller/{sellerId}
+
+# Створити (POST):
+curl -X POST http://localhost:8080/api/reviews \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"reviewerId":1, "targetType":"PRODUCT", "targetId":1, "rating":5, "comment":"Super!"}'
+
+# Оновити (PUT):
+curl -X PUT http://localhost:8080/api/reviews/{id} \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"rating":4, "comment":"Not bad", "reviewerId":1, "targetId":1, "targetType":"PRODUCT"}'
+
+# Видалити (DELETE):
+curl -X DELETE http://localhost:8080/api/reviews/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+=============================================================
+ 11. COMMISSIONS (КОМІСІЇ)
+=============================================================
+# Всі комісії:
+curl -X GET http://localhost:8080/api/commissions -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# За продавцем:
+curl -X GET http://localhost:8080/api/commissions/seller/{sellerId} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оплатити комісію:
+curl -X POST http://localhost:8080/api/commissions/{id}/pay -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Оновити (PUT):
+curl -X PUT http://localhost:8080/api/commissions/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN" -H "Content-Type: application/json" -d '{"sellerId":1, "amount": 10.0}'
+
+# Видалити (DELETE):
+curl -X DELETE http://localhost:8080/api/commissions/{id} -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
