@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: postgres_auth
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth_user_db
+    ports:
+      - "5431:5432"
+    networks:
+      - marketplace_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-catalog:
+    image: postgres:16-alpine
+    container_name: postgres_catalog
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: catalog_db
+    ports:
+      - "5432:5432"
+    networks:
+      - marketplace_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: postgres_order
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order_billing_db
+    ports:
+      - "5433:5432"
+    networks:
+      - marketplace_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-user-service:
+    build:
+      context: ./auth-user-service
+      dockerfile: Dockerfile
+    container_name: auth-user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-auth:5432/auth_user_db
+    networks:
+      - marketplace_net
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+
+  catalog-service:
+    build:
+      context: ./catalog-service
+      dockerfile: Dockerfile
+    container_name: catalog-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-catalog:5432/catalog_db
+      - AUTH_SERVICE_URL=http://auth-user-service:8081
+    networks:
+      - marketplace_net
+    depends_on:
+      postgres-catalog:
+        condition: service_healthy
+
+  order-billing-service:
+    build:
+      context: ./order-billing-service
+      dockerfile: Dockerfile
+    container_name: order-billing-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-order:5432/order_billing_db
+      - AUTH_SERVICE_URL=http://auth-user-service:8081
+      - CATALOG_SERVICE_URL=http://catalog-service:8082
+    networks:
+      - marketplace_net
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-user-service:8081
+      - CATALOG_SERVICE_URL=http://catalog-service:8082
+      - ORDER_SERVICE_URL=http://order-billing-service:8083
+    networks:
+      - marketplace_net
+    depends_on:
+      - auth-user-service
+      - catalog-service
+      - order-billing-service
+
+networks:
+  marketplace_net:
+    driver: bridge

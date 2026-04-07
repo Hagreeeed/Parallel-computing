@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-billing-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-billing-service
+  template:
+    metadata:
+      labels:
+        app: order-billing-service
+    spec:
+      containers:
+      - name: order-billing-service
+        image: order-billing-service:latest
+        imagePullPolicy: Never
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://postgres-order:5432/order_billing_db"
+        - name: AUTH_SERVICE_URL
+          value: "http://auth-user-service:8081"
+        - name: CATALOG_SERVICE_URL
+          value: "http://catalog-service:8082"
+        ports:
+        - containerPort: 8083
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-billing-service
+spec:
+  selector:
+    app: order-billing-service
+  ports:
+  - port: 8083
+    targetPort: 8083
